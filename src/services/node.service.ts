@@ -1,7 +1,9 @@
 import { nodeRepository } from '@repositories/node.repository';
 import { healthCheckRepository } from '@repositories/health-check.repository';
+import { monitoringEngine } from '@monitoring/monitoring-engine';
 import { generateId } from '@utils/id.util';
 import { logger } from '@utils/logger.util';
+import { NodeDocument } from '@models/node.model';
 import {
   ServiceResult,
   ServiceSuccess,
@@ -45,6 +47,8 @@ class NodeService {
         status: 'active',
         consecutive_failures: 0,
       });
+
+      monitoringEngine.startNode(node as unknown as NodeDocument);
 
       return new ServiceSuccess(node as unknown as MonitorNode, MESSAGE_KEYS.NODE_CREATED);
     } catch (error: any) {
@@ -214,6 +218,7 @@ class NodeService {
         return new ServiceError('Service not found', MESSAGE_KEYS.NODE_NOT_FOUND);
       }
 
+      monitoringEngine.stopNode(nodeId);
       await healthCheckRepository.deleteByNode(nodeId);
 
       return new ServiceSuccess(
@@ -236,7 +241,9 @@ class NodeService {
         return new ServiceError('Service is already paused', MESSAGE_KEYS.NODE_ALREADY_PAUSED);
       }
 
-      const updated = await nodeRepository.updateStatus(nodeId, 'paused');
+      await nodeRepository.updateStatus(nodeId, 'paused');
+      monitoringEngine.stopNode(nodeId);
+
       return new ServiceSuccess(
         { service_id: nodeId, status: 'paused', paused_at: new Date().toISOString() },
         MESSAGE_KEYS.NODE_PAUSED
@@ -257,7 +264,9 @@ class NodeService {
         return new ServiceError('Service is already active', MESSAGE_KEYS.NODE_ALREADY_ACTIVE);
       }
 
-      const updated = await nodeRepository.updateStatus(nodeId, 'active', { consecutive_failures: 0 });
+      await nodeRepository.updateStatus(nodeId, 'active', { consecutive_failures: 0 });
+      monitoringEngine.startNode(node as unknown as NodeDocument);
+
       return new ServiceSuccess(
         { service_id: nodeId, status: 'active', resumed_at: new Date().toISOString() },
         MESSAGE_KEYS.NODE_RESUMED

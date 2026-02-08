@@ -1,11 +1,14 @@
 import { envConfig } from '@configs/env.config';
 import { databaseUtil } from '@utils/database.util';
 import { logger } from '@utils/logger.util';
+import { monitoringEngine } from '@monitoring/monitoring-engine';
 import app from './app';
 
 const start = async (): Promise<void> => {
   try {
     await databaseUtil.connect();
+
+    await monitoringEngine.start();
 
     app.listen(envConfig.port, () => {
       logger.info(`Server running on port ${envConfig.port} [${envConfig.nodeEnv}]`);
@@ -18,12 +21,14 @@ const start = async (): Promise<void> => {
 
 process.on('SIGTERM', async () => {
   logger.info('SIGTERM received, shutting down...');
+  monitoringEngine.stopAll();
   await databaseUtil.disconnect();
   process.exit(0);
 });
 
 process.on('SIGINT', async () => {
   logger.info('SIGINT received, shutting down...');
+  monitoringEngine.stopAll();
   await databaseUtil.disconnect();
   process.exit(0);
 });
