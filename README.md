@@ -2,6 +2,11 @@
 
 Uptime monitoring API. Tracks endpoint health via scheduled HTTP checks with an in-process timer engine.
 
+## Links
+- [Live Demo](https://watchdog.devferanmi.xyz/)
+- [GitHub Repository](https://github.com/spiderocious/watchdog-backend)
+- [API Documentation](doc/api-docs.md)
+
 ## Stack
 
 - **Runtime:** Node.js + TypeScript
