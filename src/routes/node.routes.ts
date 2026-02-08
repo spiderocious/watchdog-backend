@@ -5,6 +5,7 @@ import {
   updateNodeValidation,
   serviceIdParam,
   listNodesValidation,
+  testConnectionValidation,
 } from '@requests/node.validation';
 import { validateRequest } from '@middlewares/validate-request.middleware';
 import { authenticate } from '@middlewares/auth.middleware';
@@ -46,6 +47,34 @@ router.delete(
   serviceIdParam,
   validateRequest,
   nodeController.delete
+);
+
+router.post(
+  '/test',
+  testConnectionValidation,
+  validateRequest,
+  nodeController.testConnection
+);
+
+router.post(
+  '/:service_id/pause',
+  serviceIdParam,
+  validateRequest,
+  nodeController.pause
+);
+
+router.post(
+  '/:service_id/resume',
+  serviceIdParam,
+  validateRequest,
+  nodeController.resume
+);
+
+router.post(
+  '/:service_id/test',
+  serviceIdParam,
+  validateRequest,
+  nodeController.testCheck
 );
 
 export default router;

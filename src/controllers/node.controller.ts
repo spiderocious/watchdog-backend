@@ -87,6 +87,53 @@ class NodeController {
 
     ResponseUtil.success(res, result.data, result.messageKey!);
   });
+
+  pause = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const authReq = req as AuthRequest;
+    const result = await nodeService.pause(req.params.service_id as string, authReq.user!.userId);
+
+    if (!result.success) {
+      ResponseUtil.badRequest(res, result.messageKey!);
+      return;
+    }
+
+    ResponseUtil.success(res, result.data, result.messageKey!);
+  });
+
+  resume = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const authReq = req as AuthRequest;
+    const result = await nodeService.resume(req.params.service_id as string, authReq.user!.userId);
+
+    if (!result.success) {
+      ResponseUtil.badRequest(res, result.messageKey!);
+      return;
+    }
+
+    ResponseUtil.success(res, result.data, result.messageKey!);
+  });
+
+  testCheck = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const authReq = req as AuthRequest;
+    const result = await nodeService.testCheck(req.params.service_id as string, authReq.user!.userId);
+
+    if (!result.success) {
+      ResponseUtil.badRequest(res, result.messageKey!);
+      return;
+    }
+
+    ResponseUtil.success(res, result.data, result.messageKey!);
+  });
+
+  testConnection = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const result = await nodeService.testConnection(req.body);
+
+    if (!result.success) {
+      ResponseUtil.badRequest(res, result.messageKey!);
+      return;
+    }
+
+    ResponseUtil.success(res, result.data, result.messageKey!);
+  });
 }
 
 export const nodeController = NodeController.getInstance();

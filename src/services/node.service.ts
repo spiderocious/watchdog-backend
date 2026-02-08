@@ -8,6 +8,7 @@ import {
   ServiceError,
   CreateNodeDTO,
   UpdateNodeDTO,
+  TestConnectionDTO,
   MonitorNode,
   PaginatedResponse,
   NodeStatus,
@@ -223,6 +224,114 @@ class NodeService {
       logger.error('Delete node error', error);
       return new ServiceError(error.message, MESSAGE_KEYS.INTERNAL_SERVER_ERROR);
     }
+  }
+
+  async pause(nodeId: string, userId: string): Promise<ServiceResult<any>> {
+    try {
+      const node = await nodeRepository.findByIdAndUser(nodeId, userId);
+      if (!node) {
+        return new ServiceError('Service not found', MESSAGE_KEYS.NODE_NOT_FOUND);
+      }
+      if (node.status === 'paused') {
+        return new ServiceError('Service is already paused', MESSAGE_KEYS.NODE_ALREADY_PAUSED);
+      }
+
+      const updated = await nodeRepository.updateStatus(nodeId, 'paused');
+      return new ServiceSuccess(
+        { service_id: nodeId, status: 'paused', paused_at: new Date().toISOString() },
+        MESSAGE_KEYS.NODE_PAUSED
+      );
+    } catch (error: any) {
+      logger.error('Pause node error', error);
+      return new ServiceError(error.message, MESSAGE_KEYS.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async resume(nodeId: string, userId: string): Promise<ServiceResult<any>> {
+    try {
+      const node = await nodeRepository.findByIdAndUser(nodeId, userId);
+      if (!node) {
+        return new ServiceError('Service not found', MESSAGE_KEYS.NODE_NOT_FOUND);
+      }
+      if (node.status === 'active') {
+        return new ServiceError('Service is already active', MESSAGE_KEYS.NODE_ALREADY_ACTIVE);
+      }
+
+      const updated = await nodeRepository.updateStatus(nodeId, 'active', { consecutive_failures: 0 });
+      return new ServiceSuccess(
+        { service_id: nodeId, status: 'active', resumed_at: new Date().toISOString() },
+        MESSAGE_KEYS.NODE_RESUMED
+      );
+    } catch (error: any) {
+      logger.error('Resume node error', error);
+      return new ServiceError(error.message, MESSAGE_KEYS.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async testCheck(nodeId: string, userId: string): Promise<ServiceResult<any>> {
+    try {
+      const node = await nodeRepository.findByIdAndUser(nodeId, userId);
+      if (!node) {
+        return new ServiceError('Service not found', MESSAGE_KEYS.NODE_NOT_FOUND);
+      }
+
+      const result = await this.executeHttpCheck(node.endpoint_url, node.method, node.headers, node.body);
+      return new ServiceSuccess(result, MESSAGE_KEYS.NODE_TEST_SUCCESS);
+    } catch (error: any) {
+      logger.error('Test check error', error);
+      return new ServiceError(error.message, MESSAGE_KEYS.NODE_TEST_FAILED);
+    }
+  }
+
+  async testConnection(data: TestConnectionDTO): Promise<ServiceResult<any>> {
+    try {
+      const result = await this.executeHttpCheck(data.endpoint_url, data.method, data.headers, data.body);
+      return new ServiceSuccess(result, MESSAGE_KEYS.CONNECTION_TEST_SUCCESS);
+    } catch (error: any) {
+      logger.error('Connection test error', error);
+      return new ServiceError(error.message, MESSAGE_KEYS.CONNECTION_TEST_FAILED);
+    }
+  }
+
+  async executeHttpCheck(
+    url: string,
+    method: string,
+    headers?: Record<string, string>,
+    body?: string
+  ): Promise<{
+    status_code: number;
+    status_text: string;
+    response_time: number;
+    response_time_unit: string;
+    content_size: number;
+    content_size_unit: string;
+    connection_established: boolean;
+  }> {
+    const start = performance.now();
+
+    const fetchOptions: RequestInit = {
+      method,
+      headers: headers || {},
+      signal: AbortSignal.timeout(30000),
+    };
+
+    if (body && ['POST', 'PUT', 'PATCH'].includes(method)) {
+      fetchOptions.body = body;
+    }
+
+    const response = await fetch(url, fetchOptions);
+    const responseTime = Math.round(performance.now() - start);
+    const responseBody = await response.text();
+
+    return {
+      status_code: response.status,
+      status_text: response.statusText,
+      response_time: responseTime,
+      response_time_unit: 'ms',
+      content_size: Buffer.byteLength(responseBody),
+      content_size_unit: 'bytes',
+      connection_established: true,
+    };
   }
 }
 
