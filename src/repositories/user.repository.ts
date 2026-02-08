@@ -31,8 +31,9 @@ class UserRepository {
     password: string;
   }): Promise<UserDocument> {
     const user = await UserModel.create(data);
-    const { password, ...userWithoutPassword } = user.toObject();
-    return userWithoutPassword as UserDocument;
+    const obj = user.toObject();
+    delete obj.password;
+    return obj as unknown as UserDocument;
   }
 }
 

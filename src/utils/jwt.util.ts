@@ -5,7 +5,7 @@ import { logger } from './logger.util';
 export class JwtUtil {
   static generateToken(payload: object): string {
     return jwt.sign(payload, jwtConfig.secret, {
-      expiresIn: jwtConfig.expiresIn,
+      expiresIn: jwtConfig.expiresIn as any,
     });
   }
 
