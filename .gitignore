@@ -4,4 +4,4 @@ dist/
 logs/
 *.log
 
-/docs
+/doc
