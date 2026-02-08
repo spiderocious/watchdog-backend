@@ -75,6 +75,10 @@ class NodeRepository {
     return NodeModel.find({ status: 'active' }).lean();
   }
 
+  async findByUserId(userId: string): Promise<NodeDocument[]> {
+    return NodeModel.find({ user_id: userId }).lean();
+  }
+
   async updateStatus(id: string, status: NodeStatus, extras?: Partial<NodeDocument>): Promise<NodeDocument | null> {
     return NodeModel.findOneAndUpdate(
       { id },

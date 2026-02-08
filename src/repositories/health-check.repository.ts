@@ -20,6 +20,11 @@ class HealthCheckRepository {
     response_time: number;
     success: boolean;
     error_message?: string;
+    request_headers?: Record<string, string>;
+    request_body?: string;
+    response_headers?: Record<string, string>;
+    response_body?: string;
+    response_content_type?: string;
   }): Promise<HealthCheckDocument> {
     return HealthCheckModel.create(data);
   }
@@ -163,6 +168,51 @@ class HealthCheckRepository {
       time: c.created_at.toISOString(),
       value: c.response_time,
     }));
+  }
+
+  async list(filters: {
+    node_ids: string[];
+    service_id?: string;
+    success?: boolean;
+    status_code?: number;
+    url_search?: string;
+    start_date?: Date;
+    end_date?: Date;
+    page: number;
+    limit: number;
+  }): Promise<{ items: HealthCheckDocument[]; total: number }> {
+    const query: any = { node_id: { $in: filters.node_ids } };
+
+    if (filters.service_id) {
+      query.node_id = filters.service_id;
+    }
+
+    if (filters.success !== undefined) {
+      query.success = filters.success;
+    }
+
+    if (filters.status_code !== undefined) {
+      query.status_code = filters.status_code;
+    }
+
+    if (filters.start_date || filters.end_date) {
+      query.created_at = {};
+      if (filters.start_date) query.created_at.$gte = filters.start_date;
+      if (filters.end_date) query.created_at.$lte = filters.end_date;
+    }
+
+    const skip = (filters.page - 1) * filters.limit;
+
+    const [items, total] = await Promise.all([
+      HealthCheckModel.find(query)
+        .sort({ created_at: -1 })
+        .skip(skip)
+        .limit(filters.limit)
+        .lean(),
+      HealthCheckModel.countDocuments(query),
+    ]);
+
+    return { items, total };
   }
 }
 

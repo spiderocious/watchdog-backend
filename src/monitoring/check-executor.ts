@@ -10,22 +10,41 @@ export const executeCheck = async (node: NodeDocument): Promise<void> => {
   let statusText = 'Unknown';
   let success = false;
   let errorMessage = '';
+  let responseHeaders: Record<string, string> = {};
+  let responseBody = '';
+  let responseContentType = '';
+
+  const requestHeaders = (node.headers as Record<string, string>) || {};
+  const requestBody = node.body || '';
 
   try {
     const fetchOptions: RequestInit = {
       method: node.method,
-      headers: (node.headers as Record<string, string>) || {},
+      headers: requestHeaders,
       signal: AbortSignal.timeout(30000),
     };
 
-    if (node.body && ['POST', 'PUT', 'PATCH'].includes(node.method)) {
-      fetchOptions.body = node.body;
+    if (requestBody && ['POST', 'PUT', 'PATCH'].includes(node.method)) {
+      fetchOptions.body = requestBody;
     }
 
     const response = await fetch(node.endpoint_url, fetchOptions);
     statusCode = response.status;
     statusText = response.statusText;
     success = node.expected_status_codes.includes(response.status);
+
+    response.headers.forEach((value, key) => {
+      responseHeaders[key] = value;
+    });
+
+    responseContentType = response.headers.get('content-type') || '';
+
+    try {
+      const bodyText = await response.text();
+      responseBody = bodyText.length > 10000 ? bodyText.substring(0, 10000) + '...[truncated]' : bodyText;
+    } catch {
+      responseBody = '[unable to read response body]';
+    }
   } catch (error: any) {
     statusCode = 0;
     statusText = 'Connection Failed';
@@ -43,6 +62,11 @@ export const executeCheck = async (node: NodeDocument): Promise<void> => {
     response_time: responseTime,
     success,
     error_message: errorMessage,
+    request_headers: requestHeaders,
+    request_body: requestBody,
+    response_headers: responseHeaders,
+    response_body: responseBody,
+    response_content_type: responseContentType,
   });
 
   if (success) {

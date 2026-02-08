@@ -35,6 +35,26 @@ const healthCheckSchema = new Schema<HealthCheckDocument>(
       type: String,
       default: '',
     },
+    request_headers: {
+      type: Schema.Types.Mixed,
+      default: {},
+    },
+    request_body: {
+      type: String,
+      default: '',
+    },
+    response_headers: {
+      type: Schema.Types.Mixed,
+      default: {},
+    },
+    response_body: {
+      type: String,
+      default: '',
+    },
+    response_content_type: {
+      type: String,
+      default: '',
+    },
   },
   {
     timestamps: { createdAt: 'created_at', updatedAt: false },
