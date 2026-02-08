@@ -8,6 +8,13 @@ import { MESSAGE_KEYS } from '@shared/constants';
 const DASHBOARD_CACHE_KEY = 'dashboard:overview';
 const DASHBOARD_CACHE_TTL = 30;
 
+const TELEMETRY_THRESHOLDS = {
+  response_time: 3000,
+  request_rate: 600,
+  error_rate: 1.0,
+  latency_p99: 200,
+};
+
 class DashboardService {
   private static instance: DashboardService;
 
@@ -61,22 +68,71 @@ class DashboardService {
       );
 
       const allNodeIds = nodes.map((n) => n.id);
-      const recentChecks = await healthCheckRepository.getRecentChecksForNodes(allNodeIds, 20);
+      const since5m = new Date(Date.now() - 5 * 60 * 1000);
 
-      const successChecks = recentChecks.filter((c) => c.success);
-      const avgResponseTime = successChecks.length > 0
-        ? Math.round(successChecks.reduce((sum, c) => sum + c.response_time, 0) / successChecks.length)
-        : 0;
+      const [recentChecks, telemetryBuckets] = await Promise.all([
+        healthCheckRepository.getRecentChecksForNodes(allNodeIds, 20),
+        healthCheckRepository.getTelemetryBuckets(allNodeIds, since5m, 30),
+      ]);
 
-      const errorRate = recentChecks.length > 0
-        ? Math.round((recentChecks.filter((c) => !c.success).length / recentChecks.length) * 10000) / 100
-        : 0;
+      const formatTime = (iso: string) => {
+        const d = new Date(iso);
+        return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`;
+      };
+
+      const responseTimeChart = telemetryBuckets.map((b) => ({
+        timestamp: formatTime(b.timestamp),
+        value: b.avg_response,
+      }));
+
+      const requestRateChart = telemetryBuckets.map((b) => ({
+        timestamp: formatTime(b.timestamp),
+        value: Math.round(b.total_checks * (60 / 30)),
+      }));
+
+      const errorRateChart = telemetryBuckets.map((b) => ({
+        timestamp: formatTime(b.timestamp),
+        value: b.total_checks > 0
+          ? Math.round((b.failed_checks / b.total_checks) * 10000) / 100
+          : 0,
+      }));
+
+      const latencyP99Chart = telemetryBuckets.map((b) => ({
+        timestamp: formatTime(b.timestamp),
+        value: b.p99_response,
+      }));
+
+      const lastBucket = telemetryBuckets[telemetryBuckets.length - 1];
 
       const data = {
         services_overview: servicesOverview,
         real_time_telemetry: {
-          response_time: { current: avgResponseTime, unit: 'ms' },
-          error_rate: { current: errorRate, unit: '%' },
+          response_time: {
+            current: lastBucket?.avg_response || 0,
+            unit: 'ms',
+            threshold: TELEMETRY_THRESHOLDS.response_time,
+            chart_data: responseTimeChart,
+          },
+          request_rate: {
+            current: lastBucket ? Math.round(lastBucket.total_checks * (60 / 30)) : 0,
+            unit: 'QPM',
+            threshold: TELEMETRY_THRESHOLDS.request_rate,
+            chart_data: requestRateChart,
+          },
+          error_rate: {
+            current: lastBucket && lastBucket.total_checks > 0
+              ? Math.round((lastBucket.failed_checks / lastBucket.total_checks) * 10000) / 100
+              : 0,
+            unit: '%',
+            threshold: TELEMETRY_THRESHOLDS.error_rate,
+            chart_data: errorRateChart,
+          },
+          latency_p99: {
+            current: lastBucket?.p99_response || 0,
+            unit: 'ms',
+            threshold: TELEMETRY_THRESHOLDS.latency_p99,
+            chart_data: latencyP99Chart,
+          },
         },
         service_diagnostics: {
           check_logs: recentChecks.filter((c) => c.success).slice(0, 10),

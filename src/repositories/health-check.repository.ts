@@ -95,6 +95,60 @@ class HealthCheckRepository {
       .lean();
   }
 
+  async getTelemetryBuckets(
+    nodeIds: string[],
+    since: Date,
+    bucketSeconds: number = 30
+  ): Promise<{
+    timestamp: string;
+    avg_response: number;
+    p99_response: number;
+    total_checks: number;
+    failed_checks: number;
+  }[]> {
+    const bucketMs = bucketSeconds * 1000;
+
+    const pipeline: any[] = [
+      {
+        $match: {
+          node_id: { $in: nodeIds },
+          created_at: { $gte: since },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            $subtract: [
+              { $toLong: '$created_at' },
+              { $mod: [{ $toLong: '$created_at' }, bucketMs] },
+            ],
+          },
+          avg_response: { $avg: '$response_time' },
+          p99_response: {
+            $percentile: {
+              input: '$response_time',
+              p: [0.99],
+              method: 'approximate',
+            },
+          },
+          total_checks: { $sum: 1 },
+          failed_checks: { $sum: { $cond: ['$success', 0, 1] } },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ];
+
+    const result = await HealthCheckModel.aggregate(pipeline);
+
+    return result.map((r) => ({
+      timestamp: new Date(r._id).toISOString(),
+      avg_response: Math.round(r.avg_response * 10) / 10,
+      p99_response: Math.round((r.p99_response?.[0] || r.avg_response) * 10) / 10,
+      total_checks: r.total_checks,
+      failed_checks: r.failed_checks,
+    }));
+  }
+
   async getResponseTimeHistory(nodeId: string, since: Date): Promise<{ time: string; value: number }[]> {
     const checks = await HealthCheckModel.find({
       node_id: nodeId,
