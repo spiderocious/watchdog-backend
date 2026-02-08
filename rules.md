@@ -1,0 +1,8 @@
+ You must commit every change with a descriptive message.
+- You must commit after every 4 file change or (new feature, whichever comes first) (commit format is "feat: add new feature", "fix: fix a bug", "refactor: refactor code for better readability", "docs: update documentation", etc.) use gad => git add . and gc "commit message" => git commit -m "commit message"
+- Do not put your name in the commit message, just describe the change you made(2 sentence max, preferably one sentence).
+- Always use hyphenated file names never camelCase or PascalCase for file names.
+- Each utility function must be in its own file and do one thing only (e.g., get-file-data.ts, truncate-text.ts) to maintain modularity and reusability.
+- Always use barrel exports (index.ts) in feature folders to simplify imports and maintain clean import statements throughout the codebase.
+- Follow the established project structure and coding conventions as outlined in the guide.md to ensure consistency across the codebase.
+- Take each feature/api one by one in the mvp-api.md, when a feature is done, commit it like outlined above, run npm run build, lint, and dev to ensure everything is working fine before moving to the next feature/api. Do not skip this step to maintain code quality and catch any issues early in the development process. If any command fails, fix the issue immediately before proceeding to the next feature/api implementation, and recommit properly.

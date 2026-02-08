@@ -1,0 +1,42 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "lib": ["ES2020"],
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "baseUrl": "./src",
+    "paths": {
+      "@controllers/*": ["controllers/*"],
+      "@controllers": ["controllers/index"],
+      "@services/*": ["services/*"],
+      "@services": ["services/index"],
+      "@repositories/*": ["repositories/*"],
+      "@repositories": ["repositories/index"],
+      "@models/*": ["models/*"],
+      "@models": ["models/index"],
+      "@routes/*": ["routes/*"],
+      "@routes": ["routes/index"],
+      "@middlewares/*": ["middlewares/*"],
+      "@middlewares": ["middlewares/index"],
+      "@configs/*": ["configs/*"],
+      "@configs": ["configs/index"],
+      "@shared/*": ["shared/*"],
+      "@shared": ["shared/index"],
+      "@utils/*": ["utils/*"],
+      "@utils": ["utils/index"],
+      "@monitoring/*": ["monitoring/*"],
+      "@monitoring": ["monitoring/index"],
+      "@requests/*": ["requests/*"],
+      "@requests": ["requests/index"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}
