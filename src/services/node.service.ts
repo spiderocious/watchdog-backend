@@ -29,7 +29,7 @@ class NodeService {
     return NodeService.instance;
   }
 
-  async create(userId: string, data: CreateNodeDTO): Promise<ServiceResult<MonitorNode>> {
+  async create(userId: string, data: CreateNodeDTO): Promise<ServiceResult<any>> {
     try {
       const nodeId = generateId(8, 'srv');
 
@@ -50,7 +50,18 @@ class NodeService {
 
       monitoringEngine.startNode(node as unknown as NodeDocument);
 
-      return new ServiceSuccess(node as unknown as MonitorNode, MESSAGE_KEYS.NODE_CREATED);
+      return new ServiceSuccess(
+        {
+          service_id: node.id,
+          service_name: node.name,
+          endpoint_url: node.endpoint_url,
+          method: node.method,
+          status: node.status,
+          monitoring_started: true,
+          created_at: node.created_at,
+        },
+        MESSAGE_KEYS.NODE_CREATED
+      );
     } catch (error: any) {
       logger.error('Create node error', error);
       return new ServiceError(error.message, MESSAGE_KEYS.INTERNAL_SERVER_ERROR);
@@ -187,7 +198,7 @@ class NodeService {
     }
   }
 
-  async update(nodeId: string, userId: string, data: UpdateNodeDTO): Promise<ServiceResult<MonitorNode>> {
+  async update(nodeId: string, userId: string, data: UpdateNodeDTO): Promise<ServiceResult<any>> {
     try {
       const updateData: any = {};
       if (data.service_name) updateData.name = data.service_name;
@@ -204,7 +215,19 @@ class NodeService {
         return new ServiceError('Service not found', MESSAGE_KEYS.NODE_NOT_FOUND);
       }
 
-      return new ServiceSuccess(node as unknown as MonitorNode, MESSAGE_KEYS.NODE_UPDATED);
+      return new ServiceSuccess(
+        {
+          service_id: node.id,
+          service_name: node.name,
+          endpoint_url: node.endpoint_url,
+          method: node.method,
+          check_interval: node.check_interval,
+          failure_threshold: node.failure_threshold,
+          status: node.status,
+          updated_at: node.updated_at,
+        },
+        MESSAGE_KEYS.NODE_UPDATED
+      );
     } catch (error: any) {
       logger.error('Update node error', error);
       return new ServiceError(error.message, MESSAGE_KEYS.INTERNAL_SERVER_ERROR);

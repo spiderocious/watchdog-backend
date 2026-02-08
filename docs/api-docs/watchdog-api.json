@@ -1,0 +1,376 @@
+{
+  "meta": {
+    "format": "httpie",
+    "version": "1.0.0",
+    "contentType": "collection",
+    "schema": "https://schema.httpie.io/1.0.0.json",
+    "docs": "https://httpie.io/r/help/export-from-httpie",
+    "source": "Watchdog Backend API - Complete Documentation"
+  },
+  "entry": {
+    "name": "Watchdog API",
+    "icon": {
+      "name": "default",
+      "color": "green"
+    },
+    "description": "Complete API documentation for Watchdog Uptime Monitoring Platform MVP. Base URL: http://localhost:3000",
+    "auth": {
+      "type": "none"
+    },
+    "requests": [
+      {
+        "name": "=== AUTHENTICATION ===",
+        "url": "{{BASE_URL}}/api/auth/register",
+        "method": "POST",
+        "headers": [
+          {"name": "Content-Type", "value": "application/json", "enabled": true}
+        ],
+        "queryParams": [],
+        "pathParams": [],
+        "auth": {
+          "type": "none"
+        },
+        "body": {
+          "type": "text",
+          "file": {"name": ""},
+          "text": {
+            "value": "{\n  \"full_name\": \"John Doe\",\n  \"email\": \"john@watchdog.test\",\n  \"password\": \"SecurePass123\"\n}",
+            "format": "application/json"
+          },
+          "form": {"isMultipart": false, "fields": []},
+          "graphql": {"query": "", "variables": ""}
+        },
+        "description": "Register a new user. Returns JWT access_token (24h), refresh_token, and user data. Passwords must be 8+ characters."
+      },
+      {
+        "name": "Auth - Login",
+        "url": "{{BASE_URL}}/api/auth/login",
+        "method": "POST",
+        "headers": [
+          {"name": "Content-Type", "value": "application/json", "enabled": true}
+        ],
+        "queryParams": [],
+        "pathParams": [],
+        "auth": {
+          "type": "none"
+        },
+        "body": {
+          "type": "text",
+          "file": {"name": ""},
+          "text": {
+            "value": "{\n  \"email\": \"john@watchdog.test\",\n  \"password\": \"SecurePass123\"\n}",
+            "format": "application/json"
+          },
+          "form": {"isMultipart": false, "fields": []},
+          "graphql": {"query": "", "variables": ""}
+        },
+        "description": "Login with email and password. Returns JWT access_token (24h), refresh_token, and user data."
+      },
+      {
+        "name": "Auth - Get Current User",
+        "url": "{{BASE_URL}}/api/auth/me",
+        "method": "GET",
+        "headers": [],
+        "queryParams": [],
+        "pathParams": [],
+        "auth": {
+          "type": "bearer",
+          "credentials": {
+            "username": "",
+            "password": "{{TOKEN}}"
+          },
+          "target": "headers"
+        },
+        "body": {
+          "type": "none",
+          "file": {"name": ""},
+          "text": {"value": "", "format": "application/json"},
+          "form": {"isMultipart": false, "fields": []},
+          "graphql": {"query": "", "variables": ""}
+        },
+        "description": "Get the currently authenticated user's profile. Requires Bearer token."
+      },
+      {
+        "name": "=== DASHBOARD ===",
+        "url": "{{BASE_URL}}/api/dashboard/overview",
+        "method": "GET",
+        "headers": [],
+        "queryParams": [],
+        "pathParams": [],
+        "auth": {
+          "type": "bearer",
+          "credentials": {
+            "username": "",
+            "password": "{{TOKEN}}"
+          },
+          "target": "headers"
+        },
+        "body": {
+          "type": "none",
+          "file": {"name": ""},
+          "text": {"value": "", "format": "application/json"},
+          "form": {"isMultipart": false, "fields": []},
+          "graphql": {"query": "", "variables": ""}
+        },
+        "description": "Get dashboard overview: services summary (top 6), telemetry, diagnostics, status overview, error logs. Cached for 30 seconds. Requires authentication."
+      },
+      {
+        "name": "=== SERVICES - CRUD ===",
+        "url": "{{BASE_URL}}/api/services",
+        "method": "GET",
+        "headers": [],
+        "queryParams": [
+          {"name": "page", "value": "1", "enabled": true},
+          {"name": "limit", "value": "10", "enabled": true},
+          {"name": "search", "value": "", "enabled": false},
+          {"name": "status", "value": "", "enabled": false},
+          {"name": "sort_by", "value": "created_at", "enabled": false},
+          {"name": "sort_order", "value": "desc", "enabled": false}
+        ],
+        "pathParams": [],
+        "auth": {
+          "type": "bearer",
+          "credentials": {
+            "username": "",
+            "password": "{{TOKEN}}"
+          },
+          "target": "headers"
+        },
+        "body": {
+          "type": "none",
+          "file": {"name": ""},
+          "text": {"value": "", "format": "application/json"},
+          "form": {"isMultipart": false, "fields": []},
+          "graphql": {"query": "", "variables": ""}
+        },
+        "description": "List all monitored services with pagination, search, status filter, and sorting. Query params: page (default 1), limit (1-100, default 10), search (text search on name), status (active|down|warning|paused), sort_by (name|uptime|last_check|created_at), sort_order (asc|desc). Returns overview stats + paginated service list."
+      },
+      {
+        "name": "Services - Test Connection (Pre-Create)",
+        "url": "{{BASE_URL}}/api/services/test",
+        "method": "POST",
+        "headers": [
+          {"name": "Content-Type", "value": "application/json", "enabled": true}
+        ],
+        "queryParams": [],
+        "pathParams": [],
+        "auth": {
+          "type": "bearer",
+          "credentials": {
+            "username": "",
+            "password": "{{TOKEN}}"
+          },
+          "target": "headers"
+        },
+        "body": {
+          "type": "text",
+          "file": {"name": ""},
+          "text": {
+            "value": "{\n  \"endpoint_url\": \"https://httpbin.org/get\",\n  \"method\": \"GET\"\n}",
+            "format": "application/json"
+          },
+          "form": {"isMultipart": false, "fields": []},
+          "graphql": {"query": "", "variables": ""}
+        },
+        "description": "Test a connection to an endpoint before creating a service. Returns status_code, response_time, content_size, and connection_established. method is optional (defaults to GET)."
+      },
+      {
+        "name": "Services - Create New Service",
+        "url": "{{BASE_URL}}/api/services",
+        "method": "POST",
+        "headers": [
+          {"name": "Content-Type", "value": "application/json", "enabled": true}
+        ],
+        "queryParams": [],
+        "pathParams": [],
+        "auth": {
+          "type": "bearer",
+          "credentials": {
+            "username": "",
+            "password": "{{TOKEN}}"
+          },
+          "target": "headers"
+        },
+        "body": {
+          "type": "text",
+          "file": {"name": ""},
+          "text": {
+            "value": "{\n  \"service_name\": \"API Gateway\",\n  \"endpoint_url\": \"https://httpbin.org/get\",\n  \"method\": \"GET\",\n  \"check_interval\": 30000,\n  \"expected_status_codes\": [200],\n  \"failure_threshold\": 3\n}",
+            "format": "application/json"
+          },
+          "form": {"isMultipart": false, "fields": []},
+          "graphql": {"query": "", "variables": ""}
+        },
+        "description": "Create a new monitored service. Required: service_name, endpoint_url, check_interval (15000-3600000ms). Optional: method (GET|POST|PUT|PATCH|DELETE, default GET), headers (object), body (string, for POST/PUT/PATCH), expected_status_codes (array, default [200,201,204]), failure_threshold (1-10, default 3). Monitoring starts immediately."
+      },
+      {
+        "name": "Services - Get Service Details",
+        "url": "{{BASE_URL}}/api/services/{{SERVICE_ID}}",
+        "method": "GET",
+        "headers": [],
+        "queryParams": [],
+        "pathParams": [],
+        "auth": {
+          "type": "bearer",
+          "credentials": {
+            "username": "",
+            "password": "{{TOKEN}}"
+          },
+          "target": "headers"
+        },
+        "body": {
+          "type": "none",
+          "file": {"name": ""},
+          "text": {"value": "", "format": "application/json"},
+          "form": {"isMultipart": false, "fields": []},
+          "graphql": {"query": "", "variables": ""}
+        },
+        "description": "Get detailed service info including: service config, quick_metrics (status, 30d uptime, avg response, 7d errors), response_time_history (24h), health_check_log (last 50), and errors (last 20). Requires authentication and ownership."
+      },
+      {
+        "name": "Services - Update Service",
+        "url": "{{BASE_URL}}/api/services/{{SERVICE_ID}}",
+        "method": "PATCH",
+        "headers": [
+          {"name": "Content-Type", "value": "application/json", "enabled": true}
+        ],
+        "queryParams": [],
+        "pathParams": [],
+        "auth": {
+          "type": "bearer",
+          "credentials": {
+            "username": "",
+            "password": "{{TOKEN}}"
+          },
+          "target": "headers"
+        },
+        "body": {
+          "type": "text",
+          "file": {"name": ""},
+          "text": {
+            "value": "{\n  \"service_name\": \"API Gateway Updated\",\n  \"check_interval\": 60000,\n  \"failure_threshold\": 5\n}",
+            "format": "application/json"
+          },
+          "form": {"isMultipart": false, "fields": []},
+          "graphql": {"query": "", "variables": ""}
+        },
+        "description": "Partial update of a service. All fields optional: service_name, endpoint_url, method, headers, body, check_interval, failure_threshold, expected_status_codes. Requires authentication and ownership."
+      },
+      {
+        "name": "Services - Delete Service",
+        "url": "{{BASE_URL}}/api/services/{{SERVICE_ID}}",
+        "method": "DELETE",
+        "headers": [],
+        "queryParams": [],
+        "pathParams": [],
+        "auth": {
+          "type": "bearer",
+          "credentials": {
+            "username": "",
+            "password": "{{TOKEN}}"
+          },
+          "target": "headers"
+        },
+        "body": {
+          "type": "none",
+          "file": {"name": ""},
+          "text": {"value": "", "format": "application/json"},
+          "form": {"isMultipart": false, "fields": []},
+          "graphql": {"query": "", "variables": ""}
+        },
+        "description": "Delete a service and all its health check history. Stops monitoring immediately. Requires authentication and ownership."
+      },
+      {
+        "name": "=== SERVICES - ACTIONS ===",
+        "url": "{{BASE_URL}}/api/services/{{SERVICE_ID}}/pause",
+        "method": "POST",
+        "headers": [],
+        "queryParams": [],
+        "pathParams": [],
+        "auth": {
+          "type": "bearer",
+          "credentials": {
+            "username": "",
+            "password": "{{TOKEN}}"
+          },
+          "target": "headers"
+        },
+        "body": {
+          "type": "none",
+          "file": {"name": ""},
+          "text": {"value": "", "format": "application/json"},
+          "form": {"isMultipart": false, "fields": []},
+          "graphql": {"query": "", "variables": ""}
+        },
+        "description": "Pause monitoring for a service. Returns 400 if already paused. Requires authentication and ownership."
+      },
+      {
+        "name": "Services - Resume Monitoring",
+        "url": "{{BASE_URL}}/api/services/{{SERVICE_ID}}/resume",
+        "method": "POST",
+        "headers": [],
+        "queryParams": [],
+        "pathParams": [],
+        "auth": {
+          "type": "bearer",
+          "credentials": {
+            "username": "",
+            "password": "{{TOKEN}}"
+          },
+          "target": "headers"
+        },
+        "body": {
+          "type": "none",
+          "file": {"name": ""},
+          "text": {"value": "", "format": "application/json"},
+          "form": {"isMultipart": false, "fields": []},
+          "graphql": {"query": "", "variables": ""}
+        },
+        "description": "Resume monitoring for a paused service. Resets consecutive failures to 0. Returns 400 if already active. Requires authentication and ownership."
+      },
+      {
+        "name": "Services - Manual Test Check",
+        "url": "{{BASE_URL}}/api/services/{{SERVICE_ID}}/test",
+        "method": "POST",
+        "headers": [],
+        "queryParams": [],
+        "pathParams": [],
+        "auth": {
+          "type": "bearer",
+          "credentials": {
+            "username": "",
+            "password": "{{TOKEN}}"
+          },
+          "target": "headers"
+        },
+        "body": {
+          "type": "none",
+          "file": {"name": ""},
+          "text": {"value": "", "format": "application/json"},
+          "form": {"isMultipart": false, "fields": []},
+          "graphql": {"query": "", "variables": ""}
+        },
+        "description": "Manually trigger a test check against an existing service's endpoint. Returns status_code, response_time, content_size. Does NOT record as a health check. Requires authentication and ownership."
+      },
+      {
+        "name": "=== SYSTEM ===",
+        "url": "{{BASE_URL}}/api/system/status",
+        "method": "GET",
+        "headers": [],
+        "queryParams": [],
+        "pathParams": [],
+        "auth": {
+          "type": "none"
+        },
+        "body": {
+          "type": "none",
+          "file": {"name": ""},
+          "text": {"value": "", "format": "application/json"},
+          "form": {"isMultipart": false, "fields": []},
+          "graphql": {"query": "", "variables": ""}
+        },
+        "description": "Public endpoint. Returns system operational status, total monitored services, active monitors count, timestamp, and version."
+      }
+    ]
+  }
+}
