@@ -8,7 +8,7 @@ export const createNodeValidation = [
 
   body('endpoint_url')
     .trim()
-    .isURL({ protocols: ['http', 'https'], require_protocol: true })
+    .isURL({ protocols: ['http', 'https'], require_protocol: true, require_tld: false })
     .withMessage('A valid HTTP/HTTPS URL is required'),
 
   body('method')
@@ -50,7 +50,7 @@ export const updateNodeValidation = [
   body('endpoint_url')
     .optional()
     .trim()
-    .isURL({ protocols: ['http', 'https'], require_protocol: true })
+    .isURL({ protocols: ['http', 'https'], require_protocol: true, require_tld: false })
     .withMessage('A valid HTTP/HTTPS URL is required'),
 
   body('method')
@@ -107,7 +107,7 @@ export const listNodesValidation = [
 export const testConnectionValidation = [
   body('endpoint_url')
     .trim()
-    .isURL({ protocols: ['http', 'https'], require_protocol: true })
+    .isURL({ protocols: ['http', 'https'], require_protocol: true, require_tld: false })
     .withMessage('A valid HTTP/HTTPS URL is required'),
 
   body('method')
