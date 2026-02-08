@@ -215,6 +215,11 @@ class NodeService {
         return new ServiceError('Service not found', MESSAGE_KEYS.NODE_NOT_FOUND);
       }
 
+      if (node.status === 'active' && monitoringEngine.isMonitoring(nodeId)) {
+        monitoringEngine.startNode(node as unknown as NodeDocument);
+        logger.info(`Restarted monitoring for node ${node.name} (${node.id}) with updated configuration`);
+      }
+
       return new ServiceSuccess(
         {
           service_id: node.id,
