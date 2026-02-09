@@ -14,13 +14,21 @@ export const executeCheck = async (node: NodeDocument): Promise<void> => {
   let responseBody = '';
   let responseContentType = '';
 
-  const requestHeaders = (node.headers as Record<string, string>) || {};
+  const requestHeaders: Record<string, string> = (node.headers as Record<string, string>) || {};
   const requestBody = node.body || '';
 
   try {
+    const headers: Record<string, string> = { ...requestHeaders };
+
+    if (requestBody && ['POST', 'PUT', 'PATCH'].includes(node.method)) {
+      if (!headers['content-type'] && !headers['Content-Type']) {
+        headers['Content-Type'] = 'application/json';
+      }
+    }
+
     const fetchOptions: RequestInit = {
       method: node.method,
-      headers: requestHeaders,
+      headers,
       signal: AbortSignal.timeout(30000),
     };
 

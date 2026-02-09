@@ -11,7 +11,6 @@ import {
   CreateNodeDTO,
   UpdateNodeDTO,
   TestConnectionDTO,
-  MonitorNode,
   PaginatedResponse,
   NodeStatus,
 } from '@shared/types';
@@ -346,9 +345,17 @@ class NodeService {
   }> {
     const start = performance.now();
 
+    const requestHeaders: Record<string, string> = { ...(headers || {}) };
+
+    if (body && ['POST', 'PUT', 'PATCH'].includes(method)) {
+      if (!requestHeaders['content-type'] && !requestHeaders['Content-Type']) {
+        requestHeaders['Content-Type'] = 'application/json';
+      }
+    }
+
     const fetchOptions: RequestInit = {
       method,
-      headers: headers || {},
+      headers: requestHeaders,
       signal: AbortSignal.timeout(30000),
     };
 
